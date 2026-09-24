@@ -3,1302 +3,1573 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classic Calculator — 1984 Reborn for macOS</title>
-  <meta name="description" content="A pixel-perfect recreation of the legendary 1984 Macintosh Calculator Desk Accessory. Now a native macOS app." />
-  <meta property="og:title" content="Classic Calculator — 1984 Reborn for macOS" />
-  <meta property="og:description" content="A pixel-perfect recreation of the legendary 1984 Macintosh Calculator Desk Accessory." />
+  <title>Classic Calculator — for macOS</title>
+  <meta name="description" content="A pixel-perfect native macOS recreation of the 1984 Macintosh Calculator Desk Accessory. Free." />
+  <meta property="og:title" content="Classic Calculator — for macOS" />
+  <meta property="og:description" content="A pixel-perfect native macOS recreation of the 1984 Macintosh Calculator Desk Accessory. Free." />
   <meta property="og:image" content="./assets/svgs/calculator_active.svg" />
-  <link rel="icon" type="image/svg+xml" href="./assets/svgs/calculator_active.svg" />
+  <meta name="theme-color" content="#fafaf8" />
+  <link rel="icon" href="./assets/svgs/calculator_active.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
 
   <style>
-    /* ─── Fonts ─────────────────────────────────────────────────── */
+    /* ── Fonts ─────────────────────────────────────────────────── */
     @font-face {
-      font-family: 'MacCalculatorDisplay';
+      font-family: 'MacCalc';
       src: url('./assets/fonts/MacCalculatorDisplay.woff') format('woff');
       font-display: swap;
     }
 
-    /* ─── Reset & Base ───────────────────────────────────────────── */
+    /* ── Reset ─────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    img, svg, video { display: block; max-width: 100%; }
+    button { cursor: pointer; border: none; background: none; font: inherit; }
+    a { color: inherit; text-decoration: none; }
 
+    /* ── Design Tokens ─────────────────────────────────────────── */
     :root {
-      --bg: #08090d;
-      --bg-raised: #0e1018;
-      --border: rgba(255,255,255,0.07);
-      --border-bright: rgba(255,255,255,0.13);
-      --text: #e8eaf0;
-      --text-muted: #6b7280;
-      --text-dim: #9ca3af;
-      --accent: #d1d5db;
-      --accent-bright: #f3f4f6;
-      --glow: rgba(209,213,219,0.12);
-      --glow-bright: rgba(209,213,219,0.22);
-      --radius: 16px;
-      --radius-lg: 24px;
+      --bg:          #fafaf8;
+      --bg-alt:      #f0ebe2;
+      --bg-dark:     #111110;
+      --ink:         #1c1a18;
+      --ink-mid:     #5a5550;
+      --ink-faint:   #a09890;
+      --border:      rgba(28,26,24,0.09);
+      --border-mid:  rgba(28,26,24,0.16);
+      --accent:      #c4a46a;
+      --mac-bezel:   #545250;
+      --mac-screen:  #c8c3bc;
+      --mac-bar:     #ffffff;
+      --radius-sm:   10px;
+      --radius:      16px;
+      --radius-lg:   24px;
+      --shell:       min(100% - 48px, 1100px);
     }
 
+    /* ── Base ──────────────────────────────────────────────────── */
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, 'SF Pro Text', BlinkMacSystemFont, system-ui, sans-serif;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    /* ─── Ambient Background ─────────────────────────────────────── */
-    .ambient {
+    /* ── Typography ────────────────────────────────────────────── */
+    .t-display {
+      font-size: clamp(48px, 7.5vw, 92px);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 0.96;
+    }
+    .t-heading {
+      font-size: clamp(34px, 4.8vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+    .t-sub {
+      font-size: clamp(16px, 1.7vw, 19px);
+      font-weight: 400;
+      color: var(--ink-mid);
+      line-height: 1.65;
+    }
+    .t-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+    .t-mono {
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      font-size: 12px;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .shell { width: var(--shell); margin-inline: auto; }
+
+    /* ── Nav ───────────────────────────────────────────────────── */
+    #nav {
       position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .ambient::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60vw;
-      height: 60vw;
-      background: radial-gradient(circle, rgba(160,165,180,0.06) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    .ambient::after {
-      content: '';
-      position: absolute;
-      bottom: 10%;
-      right: 10%;
-      width: 40vw;
-      height: 40vw;
-      background: radial-gradient(circle, rgba(100,110,140,0.04) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    /* ─── Layout ─────────────────────────────────────────────────── */
-    .container {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 0 24px;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ─── Nav ────────────────────────────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
+      inset: 0 0 auto;
       z-index: 100;
       padding: 16px 0;
+      transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+    }
+    #nav.scrolled {
+      background: rgba(250,250,248,0.85);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      background: rgba(8,9,13,0.8);
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 24px;
     }
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text);
-    }
-    .nav-icon {
-      width: 32px;
-      height: 32px;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-    .nav-logo-text {
+      gap: 10px;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--accent-bright);
+    }
+    .nav-brand img {
+      width: 28px;
+      height: 28px;
+      image-rendering: pixelated;
     }
     .nav-links {
       display: flex;
+      align-items: center;
       gap: 28px;
       list-style: none;
     }
     .nav-links a {
-      color: var(--text-dim);
-      text-decoration: none;
       font-size: 14px;
       font-weight: 500;
+      color: var(--ink-mid);
       transition: color 0.2s;
     }
-    .nav-links a:hover { color: var(--accent-bright); }
-    .btn-cta {
+    .nav-links a:hover { color: var(--ink); }
+
+    /* ── Micro-Interaction Buttons ────────────────────────────── */
+    .btn-pill {
+      position: relative;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 20px;
-      background: var(--accent-bright);
-      color: #0a0b0f;
-      border-radius: 10px;
+      overflow: hidden;
+      padding: 11px 24px;
+      background: var(--ink);
+      color: var(--bg);
+      border-radius: 100px;
       font-size: 14px;
       font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
       letter-spacing: -0.01em;
-      border: none;
-      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .btn-cta:hover {
-      background: #ffffff;
+    .btn-pill:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+      opacity: 0.94;
     }
-    .btn-cta svg { flex-shrink: 0; }
+    .btn-pill-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-pill:hover .btn-pill-icon {
+      transform: translateY(2px);
+    }
 
-    /* ─── Hero ───────────────────────────────────────────────────── */
-    .hero {
-      padding: 120px 0 80px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-    .hero-badge {
+    .btn-ghost {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border-bright);
+      padding: 10px 20px;
+      border: 1px solid var(--border-mid);
       border-radius: 100px;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 500;
-      color: var(--text-dim);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
+      color: var(--ink-mid);
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
     }
-    .hero-badge::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #d1d5db;
-      box-shadow: 0 0 8px #9ca3af;
+    .btn-ghost:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+      transform: translateY(-1px);
     }
-    .hero h1 {
-      font-size: clamp(42px, 7vw, 80px);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1.08;
-      color: var(--accent-bright);
-      margin-bottom: 24px;
+
+    /* ── Hero ──────────────────────────────────────────────────── */
+    #hero {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      padding: 120px 0 70px;
     }
-    .hero h1 em {
-      font-style: normal;
-      background: linear-gradient(135deg, #e8eaf0 0%, #9ca3af 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      gap: 48px;
+      width: 100%;
     }
-    .hero-sub {
-      font-size: clamp(16px, 2vw, 20px);
-      color: var(--text-muted);
-      max-width: 540px;
-      margin: 0 auto 44px;
-      line-height: 1.65;
-      font-weight: 400;
-    }
+    .hero-copy { max-width: 540px; }
+    .hero-copy h1 { margin-bottom: 22px; }
+    .hero-copy p { max-width: 440px; margin-bottom: 34px; }
     .hero-actions {
       display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 80px;
-    }
-    .btn-secondary {
-      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 20px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border-bright);
-      border-radius: 10px;
-      color: var(--text-dim);
-      font-size: 14px;
+      gap: 14px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .trust-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .trust-row span {
+      font-size: 13px;
+      color: var(--ink-faint);
       font-weight: 500;
-      text-decoration: none;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
-      cursor: pointer;
     }
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.10);
-      border-color: rgba(255,255,255,0.22);
-      color: var(--accent-bright);
-    }
+    .trust-row span::before { content: '·'; margin-right: 16px; }
+    .trust-row span:first-child::before { content: none; }
 
-    /* ─── Interactive Calculator ─────────────────────────────────── */
-    .calc-showcase {
+    /* ── Mac Bezel ─────────────────────────────────────────────── */
+    .mac-env {
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      gap: 40px;
-      flex-wrap: wrap;
+      align-items: center;
+      user-select: none;
     }
-    .calc-wrapper {
+    .mac-bezel-outer {
       position: relative;
       display: inline-block;
-      filter: drop-shadow(0 32px 80px rgba(0,0,0,0.7)) drop-shadow(0 8px 24px rgba(0,0,0,0.5));
     }
-    .calc-wrapper:hover {
-      filter: drop-shadow(0 40px 100px rgba(0,0,0,0.8)) drop-shadow(0 12px 32px rgba(150,160,180,0.12));
-    }
-    .calc-wrapper svg {
-      display: block;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
-
-    .calc-interactive {
+    .mac-bezel {
+      background: linear-gradient(160deg, #6c6967 0%, #4c4947 40%, #3e3c3a 100%);
+      border-radius: 18px 18px 6px 6px;
+      padding: 14px 14px 40px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.12) inset,
+        0 0 0 1px rgba(0,0,0,0.5),
+        0 32px 70px rgba(0,0,0,0.38),
+        0 8px 24px rgba(0,0,0,0.25);
       position: relative;
-      cursor: default;
     }
-    /* The SVG calc body */
-    #calc-svg-display {
-      position: absolute;
-      pointer-events: none;
+    .mac-screen-outer {
+      background: #1a1817;
+      border-radius: 4px 4px 2px 2px;
+      padding: 2px;
     }
-    /* Clickable button overlay */
-    .calc-btn-overlay {
-      position: absolute;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      padding: 0;
-    }
-    .calc-btn-overlay:active { opacity: 0.7; }
-
-    .calc-info {
-      max-width: 260px;
+    .mac-screen {
+      background: var(--mac-screen);
+      border-radius: 3px;
+      overflow: hidden;
+      width: 320px;
+      height: 250px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding-top: 16px;
-      text-align: left;
     }
-    .calc-info-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .calc-info-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
+    .mac-menubar {
+      background: var(--mac-bar);
+      height: 20px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      padding: 0 8px;
+      gap: 12px;
       flex-shrink: 0;
-      font-size: 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
     }
-    .calc-info-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-    .calc-info-text strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 13px; }
-
-    /* Display overlay */
-    .calc-display-overlay {
-      position: absolute;
-      font-family: 'MacCalculatorDisplay', monospace;
-      font-size: 18px;
-      color: #1a1a1a;
-      text-align: right;
-      pointer-events: none;
-      overflow: hidden;
+    .mac-menubar .apple-logo {
+      width: 11px;
+      height: 13px;
+      display: flex;
+      align-items: center;
+    }
+    .mac-menubar .apple-logo svg { width: 11px; height: 13px; }
+    .mac-menu-item {
+      font-size: 11px;
+      font-family: 'Chicago', 'Geneva', system-ui, sans-serif;
+      font-weight: 700;
+      color: #1a1817;
       white-space: nowrap;
-      letter-spacing: 0.02em;
     }
-
-    /* ─── Section Headers ────────────────────────────────────────── */
-    .section {
-      padding: 100px 0;
-      position: relative;
-      z-index: 1;
-    }
-    .section-label {
+    .mac-menubar .spacer { flex: 1; }
+    .mac-menubar .clock {
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 16px;
+      color: #1a1817;
     }
-    .section-title {
-      font-size: clamp(28px, 4vw, 44px);
+    .mac-desktop {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 12px;
+      position: relative;
+    }
+    #calc-hero-wrap {
+      position: absolute;
+      top: 20px;
+      left: 107px;
+      width: 106px;
+      height: 169px;
+      filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.38));
+      transform-origin: center center;
+    }
+    #calc-hero {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      width: 106px;
+      height: 169px;
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.25s ease;
+    }
+    #calc-hero-inactive {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      width: 106px;
+      height: 169px;
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .mac-stand {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 36px;
+    }
+    .mac-stand::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 7px;
+      background: linear-gradient(to bottom, #5a5754, #4a4846);
+      border-radius: 0 0 3px 3px;
+    }
+    .mac-stand::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 38px;
+      height: 30px;
+      background: linear-gradient(to right, #545250 0%, #686563 50%, #545250 100%);
+    }
+
+    /* ── Story Strip ───────────────────────────────────────────── */
+    #story {
+      overflow: hidden;
+      position: relative;
+    }
+    .story-pin-wrap {
+      min-height: 100vh;
+    }
+    .story-sticky {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .story-track {
+      display: flex;
+      will-change: transform;
+    }
+    .story-panel {
+      width: 100vw;
+      flex-shrink: 0;
+      padding: 0 max(48px, calc((100vw - 1100px) / 2));
+      display: flex;
+      align-items: center;
+      gap: 64px;
+    }
+    .story-number {
+      font-size: clamp(90px, 16vw, 180px);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      line-height: 1;
+      color: var(--border-mid);
+      flex-shrink: 0;
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+    }
+    .story-content { max-width: 480px; }
+    .story-date {
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: -0.03em;
-      color: var(--accent-bright);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 16px;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+    .story-content h2 {
+      font-size: clamp(26px, 3.2vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.035em;
       line-height: 1.15;
       margin-bottom: 16px;
     }
-    .section-sub {
-      font-size: 17px;
-      color: var(--text-muted);
-      max-width: 560px;
-      line-height: 1.65;
-    }
-    .section-header {
-      margin-bottom: 56px;
+    .story-content p {
+      font-size: 16px;
+      color: var(--ink-mid);
+      line-height: 1.7;
     }
 
-    /* ─── Bento Grid ─────────────────────────────────────────────── */
-    .bento {
+    /* ── Feature Panels ────────────────────────────────────────── */
+    #features { padding: 0; }
+
+    .feature-panel {
+      min-height: 80vh;
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      grid-auto-rows: auto;
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
     }
-    .card {
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      transition: border-color 0.25s, background 0.25s, transform 0.2s;
-      overflow: hidden;
-      position: relative;
+    .feature-panel.reverse { direction: rtl; }
+    .feature-panel.reverse > * { direction: ltr; }
+    .feature-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 48px;
+      background: var(--bg-alt);
+      min-height: 80vh;
     }
-    .card:hover {
-      border-color: var(--border-bright);
-      background: #11131b;
-      transform: translateY(-2px);
+    .feature-panel.dark-panel .feature-visual {
+      background: var(--bg-dark);
     }
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
-      pointer-events: none;
+    .feature-copy {
+      padding: 80px 60px;
     }
+    .feature-copy .t-label { margin-bottom: 18px; }
+    .feature-copy h2 { margin-bottom: 16px; }
+    .feature-copy p {
+      font-size: 17px;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      max-width: 400px;
+    }
+    .feature-copy p + p { margin-top: 12px; }
 
-    .card-span-7 { grid-column: span 7; }
-    .card-span-5 { grid-column: span 5; }
-    .card-span-4 { grid-column: span 4; }
-    .card-span-8 { grid-column: span 8; }
-    .card-span-6 { grid-column: span 6; }
-    .card-span-12 { grid-column: span 12; }
-
-    @media (max-width: 768px) {
-      .card-span-7, .card-span-5, .card-span-4, .card-span-8, .card-span-6 { grid-column: span 12; }
+    /* Calculator artwork display */
+    .calc-trio {
+      display: flex;
+      gap: 32px;
+      align-items: flex-end;
     }
-
-    .card-eyebrow {
+    .calc-trio-item { text-align: center; }
+    .calc-trio-item img {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.18));
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .calc-trio-item:hover img { transform: translateY(-8px); }
+    .calc-trio-label {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 10px;
+      color: var(--ink-faint);
+      margin-top: 14px;
     }
-    .card-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-bright);
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
-      line-height: 1.25;
-    }
-    .card-body {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-    .card-visual {
-      margin-top: 24px;
+
+    /* Waveform */
+    .waveform-wrap {
       display: flex;
-      justify-content: center;
-    }
-
-    /* Pixel artwork cards */
-    .pixel-display {
-      font-family: 'MacCalculatorDisplay', monospace;
-      font-size: 36px;
-      color: #1a1a1a;
-      background: #b8c4b8;
-      border: 2px solid #888;
-      border-radius: 4px;
-      padding: 8px 16px;
-      letter-spacing: 0.04em;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 1px #666;
-      image-rendering: pixelated;
-    }
-    .pixel-display-dark {
-      color: #eef2ee;
-      background: #1a1a1a;
-      border-color: #444;
-    }
-
-    .calc-badge {
-      display: inline-flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: 'SF Mono', 'Menlo', monospace;
+      gap: 30px;
+      cursor: pointer;
+      padding: 24px;
+      border-radius: var(--radius);
+      transition: background 0.2s ease;
     }
-
-    /* ─── Audio Card ─────────────────────────────────────────────── */
-    .audio-card {
-      background: linear-gradient(145deg, #0e1018, #111420);
-      border-color: rgba(255,255,255,0.09);
+    .waveform-wrap:hover {
+      background: rgba(255,255,255,0.03);
     }
     .waveform {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 3px;
-      height: 60px;
-      margin-top: 20px;
+      gap: 5px;
+      height: 90px;
     }
     .wave-bar {
-      width: 3px;
-      background: rgba(180,190,210,0.4);
-      border-radius: 2px;
-      animation: wave-pulse 1.2s ease-in-out infinite;
-    }
-    @keyframes wave-pulse {
-      0%, 100% { height: 8px; opacity: 0.3; }
-      50% { height: var(--h); opacity: 0.8; }
-    }
-    .wave-bar:nth-child(1)  { --h: 20px; animation-delay: 0.0s; }
-    .wave-bar:nth-child(2)  { --h: 36px; animation-delay: 0.1s; }
-    .wave-bar:nth-child(3)  { --h: 48px; animation-delay: 0.2s; }
-    .wave-bar:nth-child(4)  { --h: 56px; animation-delay: 0.15s; }
-    .wave-bar:nth-child(5)  { --h: 60px; animation-delay: 0.05s; }
-    .wave-bar:nth-child(6)  { --h: 52px; animation-delay: 0.25s; }
-    .wave-bar:nth-child(7)  { --h: 40px; animation-delay: 0.3s; }
-    .wave-bar:nth-child(8)  { --h: 60px; animation-delay: 0.08s; }
-    .wave-bar:nth-child(9)  { --h: 44px; animation-delay: 0.18s; }
-    .wave-bar:nth-child(10) { --h: 28px; animation-delay: 0.28s; }
-    .wave-bar:nth-child(11) { --h: 16px; animation-delay: 0.35s; }
-    .wave-bar:nth-child(12) { --h: 36px; animation-delay: 0.12s; }
-    .wave-bar:nth-child(13) { --h: 50px; animation-delay: 0.22s; }
-    .wave-bar:nth-child(14) { --h: 42px; animation-delay: 0.32s; }
-    .wave-bar:nth-child(15) { --h: 24px; animation-delay: 0.07s; }
-
-    /* ─── Themes Preview ─────────────────────────────────────────── */
-    .themes-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    .theme-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-      font-size: 12px;
-      color: var(--text-dim);
-      background: rgba(255,255,255,0.03);
-    }
-    .theme-swatch {
-      width: 12px;
-      height: 12px;
+      width: 4px;
+      background: rgba(250,250,248,0.4);
       border-radius: 3px;
-      border: 1px solid rgba(255,255,255,0.15);
+      animation: wave 1.4s ease-in-out infinite;
+      transform-origin: center;
+    }
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.28); opacity: 0.35; }
+      50% { transform: scaleY(1); opacity: 0.95; }
+    }
+    .waveform-wrap:hover .wave-bar { background: rgba(250,250,248,0.75); }
+    .waveform-hint {
+      font-size: 13px;
+      color: rgba(250,250,248,0.45);
+      font-weight: 500;
+      letter-spacing: 0.02em;
     }
 
-    /* ─── History Section ────────────────────────────────────────── */
-    .history-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+    /* Display font specimen */
+    .display-specimen {
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
     }
-    @media (max-width: 640px) {
-      .history-grid { grid-template-columns: 1fr; }
+    .display-specimen .number {
+      font-family: 'MacCalc', monospace;
+      font-size: clamp(38px, 5.5vw, 68px);
+      color: #222222;
+      letter-spacing: 0.04em;
+      display: block;
+      padding: 18px 24px;
+      background: #eeeeee;
+      border: 2px solid #555555;
+      border-radius: 3px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.18), 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      text-align: right;
     }
-    .history-card {
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      position: relative;
-      overflow: hidden;
+    .display-specimen .number-dark {
+      background: #1a1a1a;
+      color: #b8c4b8;
+      border-color: #444;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+      font-size: clamp(26px, 3.8vw, 44px);
     }
-    .history-card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-    }
-    .history-year {
+    .display-specimen .label {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 12px;
+      color: var(--ink-faint);
     }
-    .history-quote {
-      font-size: 17px;
-      line-height: 1.6;
-      color: var(--text-dim);
-      font-style: italic;
-      margin-bottom: 16px;
-    }
-    .history-attr {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-    .history-attr strong { color: var(--text-dim); }
 
-    .timeline-item {
+    /* Window state comparison */
+    .window-compare {
       display: flex;
-      gap: 20px;
-      padding: 24px 0;
-      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      gap: 28px;
     }
-    .timeline-item:last-child { border-bottom: none; }
-    .timeline-year-label {
-      font-size: 12px;
+    .window-state {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+    .window-state img {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      width: 110px;
+      height: 175px;
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.15));
+      transition: transform 0.3s ease;
+    }
+    .window-state:hover img {
+      transform: scale(1.03);
+    }
+    .window-state-label .name {
+      font-size: 16px;
       font-weight: 700;
-      color: var(--text-muted);
-      font-family: 'SF Mono', 'Menlo', monospace;
-      letter-spacing: 0.05em;
-      min-width: 48px;
-      padding-top: 2px;
-    }
-    .timeline-content { flex: 1; }
-    .timeline-content h4 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--accent-bright);
       margin-bottom: 4px;
     }
-    .timeline-content p {
+    .window-state-label .desc {
       font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.6;
+      color: var(--ink-mid);
+      line-height: 1.5;
     }
 
-    /* ─── Footer ─────────────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 60px 0 40px;
+    /* ── Try It ────────────────────────────────────────────────── */
+    #try {
+      padding: 120px 0;
+      text-align: center;
+      background: var(--bg-alt);
+    }
+    #try h2 { margin-bottom: 10px; }
+    #try .t-sub { margin-bottom: 48px; }
+    .try-env {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .try-mac-bg {
+      background: var(--mac-screen);
+      border-radius: 6px;
+      padding: 36px 44px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.15),
+        0 16px 40px rgba(0,0,0,0.14);
       position: relative;
-      z-index: 1;
     }
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 48px;
-      margin-bottom: 48px;
+
+    /* Interactive calc container */
+    #calc-interactive {
+      position: relative;
+      width: 318px;
+      height: 507px;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    @media (max-width: 640px) {
-      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
-      .nav-links { display: none; }
+    #calc-interactive .calc-artwork {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 318px;
+      height: 507px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      pointer-events: none;
     }
-    .footer-brand { display: flex; flex-direction: column; gap: 12px; }
-    .footer-tagline { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
-    .footer-col h5 {
+    #calc-display-text {
+      position: absolute;
+      top: 84px;
+      left: 27px;
+      width: 264px;
+      height: 57px;
+      background: #eeeeee;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 20px;
+      font-family: 'MacCalc', monospace;
+      font-size: 30px;
+      color: #222222;
+      pointer-events: none;
+      overflow: hidden;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+    .calc-btn {
+      position: absolute;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      border-radius: 0;
+      -webkit-tap-highlight-color: transparent;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    .kbd-hints {
+      margin-top: 28px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .kbd {
+      display: inline-block;
+      padding: 4px 9px;
+      background: rgba(28,26,24,0.06);
+      border: 1px solid var(--border-mid);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Menlo', monospace;
       font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      color: var(--ink-mid);
+      font-weight: 500;
+    }
+
+    /* ── Download CTA ──────────────────────────────────────────── */
+    #download {
+      background: var(--bg-dark);
+      color: var(--bg);
+      padding: 140px 0;
+      text-align: center;
+    }
+    #download h2 { color: var(--bg); margin-bottom: 16px; }
+    #download .t-sub {
+      color: rgba(250,250,248,0.5);
+      margin-bottom: 44px;
+      max-width: 440px;
+      margin-inline: auto;
+    }
+    .btn-pill-light {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 34px;
+      background: var(--bg);
+      color: var(--ink);
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-bottom: 34px;
+    }
+    .btn-pill-light:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+      opacity: 0.95;
+    }
+    .trust-row-dark {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .trust-row-dark span {
+      font-size: 13px;
+      color: rgba(250,250,248,0.4);
+      font-weight: 500;
+    }
+    .trust-row-dark span::before { content: '·'; margin-right: 18px; }
+    .trust-row-dark span:first-child::before { content: none; }
+
+    /* ── Footer ────────────────────────────────────────────────── */
+    footer {
+      background: var(--bg-dark);
+      padding: 48px 0 0;
+      overflow: hidden;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(250,250,248,0.06);
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--bg);
+    }
+    .footer-brand img {
+      width: 28px;
+      height: 28px;
+      image-rendering: pixelated;
+    }
+    .footer-tagline {
+      font-size: 13px;
+      color: rgba(250,250,248,0.35);
+      margin-top: 10px;
+      max-width: 300px;
+      line-height: 1.6;
+    }
+    .footer-links {
+      display: flex;
+      gap: 52px;
+    }
+    .footer-col h5 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 16px;
+      color: rgba(250,250,248,0.3);
+      margin-bottom: 14px;
     }
     .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .footer-col a {
-      font-size: 14px;
-      color: var(--text-muted);
-      text-decoration: none;
+      font-size: 13px;
+      color: rgba(250,250,248,0.45);
       transition: color 0.2s;
     }
-    .footer-col a:hover { color: var(--text); }
+    .footer-col a:hover { color: rgba(250,250,248,0.85); }
     .footer-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 28px;
-      border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-      gap: 12px;
+      padding: 24px 0;
+      font-size: 12px;
+      color: rgba(250,250,248,0.25);
     }
-    .footer-bottom p { font-size: 13px; color: var(--text-muted); }
-    .footer-bottom a { color: var(--text-dim); text-decoration: none; }
-    .footer-bottom a:hover { color: var(--text); }
-
-    /* ─── Scroll Reveal ──────────────────────────────────────────── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
+    .footer-wordmark {
+      font-size: clamp(80px, 18vw, 220px);
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      color: rgba(250,250,248,0.035);
+      line-height: 0.82;
+      margin-top: 24px;
+      user-select: none;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
-    /* ─── Divider ────────────────────────────────────────────────── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 0 0;
+    /* ── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      #hero {
+        padding-top: 100px;
+        padding-bottom: 60px;
+      }
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 40px;
+      }
+      .hero-copy { max-width: 100%; margin: 0 auto; }
+      .hero-copy p { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+      .trust-row { justify-content: center; }
+      
+      .mac-env {
+        transform: scale(0.92);
+        margin-top: 10px;
+      }
+
+      .feature-panel {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .feature-panel.reverse { direction: ltr; }
+      .feature-visual { min-height: 45vh; padding: 60px 24px; }
+      .feature-copy { padding: 50px 24px; }
+      .feature-copy p { max-width: 100%; }
+
+      .story-panel { padding: 0 24px; gap: 28px; }
+      .story-number { font-size: clamp(64px, 18vw, 110px); }
     }
 
-    /* ─── Keyboard hint ──────────────────────────────────────────── */
-    .kbd {
-      display: inline-block;
-      padding: 2px 6px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border-bright);
-      border-bottom-width: 2px;
-      border-radius: 5px;
-      font-family: 'SF Mono', 'Menlo', monospace;
-      font-size: 11px;
-      color: var(--text-dim);
-      vertical-align: middle;
-    }
-
-    /* ─── Feature bullets ────────────────────────────────────────── */
-    .feature-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    .feature-list li {
-      display: flex;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-muted);
-      align-items: flex-start;
-    }
-    .feature-list li::before {
-      content: '✦';
-      color: var(--text-muted);
-      font-size: 9px;
-      margin-top: 3px;
-      flex-shrink: 0;
-    }
-
-    /* ─── SVG container sizes ────────────────────────────────────── */
-    .calc-3x {
-      width: 318px;  /* 106 * 3 */
-      height: 507px; /* 169 * 3 */
-    }
-    .calc-2x {
-      width: 212px;
-      height: 338px;
+    @media (max-width: 600px) {
+      .mac-env {
+        transform: scale(0.82);
+      }
+      .try-mac-bg {
+        padding: 20px 14px;
+      }
+      #calc-interactive {
+        transform: scale(0.88);
+        transform-origin: top center;
+        margin-bottom: -50px;
+      }
+      .calc-trio { gap: 14px; }
+      .calc-trio-item img { width: 80px; }
     }
   </style>
 </head>
 <body>
 
-<div class="ambient"></div>
-
-<!-- ─── Navigation ──────────────────────────────────────────────── -->
-<nav>
-  <div class="container">
-    <div class="nav-inner">
-      <a href="#" class="nav-brand">
-        <img class="nav-icon" src="./assets/svgs/calculator_active.svg" alt="Classic Calculator icon" />
-        <span class="nav-logo-text">Classic Calculator</span>
-      </a>
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#story">Story</a></li>
-        <li><a href="#download">Download</a></li>
-      </ul>
-      <a class="btn-cta" href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-        Download on GitHub
-      </a>
-    </div>
+<!-- ── Nav ─────────────────────────────────────────────────────── -->
+<nav id="nav">
+  <div class="shell nav-inner">
+    <a href="#" class="nav-brand">
+      <img src="./assets/svgs/calculator_active.svg" alt="Classic Calculator" />
+      Classic Calculator
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#story">Story</a></li>
+      <li><a href="#try">Try It</a></li>
+    </ul>
+    <a class="btn-pill" href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
+      <span class="btn-pill-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </span>
+      Download free
+    </a>
   </div>
 </nav>
 
-<!-- ─── Hero ────────────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-badge">Open Source · Native macOS · Free</div>
-    <h1>1984 Nostalgia.<br/><em>2026 Precision.</em></h1>
-    <p class="hero-sub">
-      A pixel-perfect recreation of the legendary Macintosh Calculator Desk Accessory — 
-      the one Susan Kare designed and Andy Hertzfeld coded in a single afternoon.
+<!-- ── Hero ────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="shell">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1 class="t-display">The calculator<br>that shipped<br>with the Mac.</h1>
+        <p class="t-sub">
+          Chris Espinosa wrote it. Andy Hertzfeld built the UI. 
+          Steve Jobs couldn't stop redesigning it.<br>
+          This is that calculator — for your Mac today.
+        </p>
+        <div class="hero-actions">
+          <a class="btn-pill" href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
+            <span class="btn-pill-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </span>
+            Download free
+          </a>
+          <a class="btn-ghost" href="#try">Try it in your browser →</a>
+        </div>
+        <div class="trust-row">
+          <span>Free</span>
+          <span>macOS 13+</span>
+          <span>Native SwiftUI</span>
+        </div>
+      </div>
+
+      <!-- Mac Desktop Environment -->
+      <div class="mac-env">
+        <div class="mac-bezel-outer">
+          <div class="mac-bezel">
+            <div class="mac-screen-outer">
+              <div class="mac-screen">
+                <div class="mac-menubar">
+                  <div class="apple-logo">
+                    <svg viewBox="0 0 11 13" fill="#1a1817"><path d="M5.5 2.4C6.1 1.7 6.5 0.8 6.5 0c-.9 0-2 .5-2.7 1.2C3.2 1.9 2.8 2.8 2.9 3.6c1 .1 2-.5 2.6-1.2zm.9 1.6C5.2 4 4.3 5.3 4.3 6.6c0 1.9 1.7 3.5 3.5 2.6-.5-.8-.8-1.7-.8-2.6 0-1 .4-1.9 1.1-2.7-.5-.4-1-.9-1.7-.9z"/></svg>
+                  </div>
+                  <span class="mac-menu-item">File</span>
+                  <span class="mac-menu-item">Edit</span>
+                  <span class="mac-menu-item">View</span>
+                  <span class="mac-menu-item">Special</span>
+                  <div class="spacer"></div>
+                  <span class="clock t-mono">9:41 AM</span>
+                </div>
+                <div class="mac-desktop">
+                  <div id="calc-hero-wrap">
+                    <img id="calc-hero" src="./assets/svgs/calculator_active.svg" width="106" height="169" alt="Calculator active state" />
+                    <img id="calc-hero-inactive" src="./assets/svgs/calculator_inactive.svg" width="106" height="169" alt="Calculator inactive state" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mac-stand"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div style="height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);"></div>
+
+<!-- ── Story Strip ─────────────────────────────────────────────── -->
+<section id="story">
+  <div class="story-pin-wrap">
+    <div class="story-sticky" id="story-sticky">
+      <div class="story-track" id="story-track">
+
+        <div class="story-panel">
+          <div class="story-number">01</div>
+          <div class="story-content">
+            <div class="story-date">Autumn 1983</div>
+            <h2>A calculator.<br>Steve Jobs<br>had notes.</h2>
+            <p>Chris Espinosa developed the Calculator Desk Accessory for the original Macintosh. Jobs kept rejecting every version Espinosa showed him — the buttons were too thick, the lines too thin, the spacing awkward.</p>
+          </div>
+        </div>
+
+        <div class="story-panel">
+          <div class="story-number">02</div>
+          <div class="story-content">
+            <div class="story-date">Early 1984</div>
+            <h2>The Calculator<br>Construction<br>Set.</h2>
+            <p>Espinosa's legendary solution: he built a settings panel that let Jobs tune every single visual parameter himself — button sizes, line widths, padding. Jobs spent an hour tuning it, and ended up choosing values nearly identical to Espinosa's original.</p>
+          </div>
+        </div>
+
+        <div class="story-panel">
+          <div class="story-number">03</div>
+          <div class="story-content">
+            <div class="story-date">24 January 1984</div>
+            <h2>Ships with<br>the first Mac.<br>Icon by Kare.</h2>
+            <p>Susan Kare designed the iconic pixel-art desk accessory icon. Andy Hertzfeld implemented the UI in System 1.0. It became an instantly recognizable piece of computer history — now reimagined as a modern native Mac app.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div style="height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);"></div>
+
+<!-- ── Features ─────────────────────────────────────────────────── -->
+<section id="features">
+
+  <!-- Panel 1: Pixel Artwork -->
+  <div class="feature-panel">
+    <div class="feature-visual">
+      <div class="calc-trio reveal">
+        <div class="calc-trio-item">
+          <img src="./assets/svgs/calculator_active.svg" width="106" height="169" alt="Active state" style="width:105px;" />
+          <div class="calc-trio-label">Active</div>
+        </div>
+        <div class="calc-trio-item">
+          <img src="./assets/svgs/calculator_inactive.svg" width="106" height="169" alt="Inactive state" style="width:105px;" />
+          <div class="calc-trio-label">Inactive</div>
+        </div>
+        <div class="calc-trio-item">
+          <img src="./assets/svgs/calculator_monochrome.svg" width="106" height="169" alt="Monochrome" style="width:105px;" />
+          <div class="calc-trio-label">Mono</div>
+        </div>
+      </div>
+    </div>
+    <div class="feature-copy reveal">
+      <div class="t-label">Artwork</div>
+      <h2 class="t-heading">Every pixel<br>is a rectangle.</h2>
+      <p>The artwork is pure SVG vector paths rendered with <code style="font-size:13px;background:var(--border);padding:2px 6px;border-radius:4px;font-family:monospace;">shape-rendering="crispEdges"</code> — mathematically sharp at any scale from 1× to 4× on Retina displays.</p>
+      <p>Three authentic variants: rich-black active titlebar, hollow inactive state, and pure high-contrast Monochrome — switchable anytime from settings.</p>
+    </div>
+  </div>
+
+  <!-- Panel 2: Sound — dark -->
+  <div class="feature-panel reverse dark-panel">
+    <div class="feature-visual">
+      <div class="waveform-wrap reveal" id="waveform-wrap" title="Click to test click sound">
+        <div class="waveform" id="waveform">
+          <!-- Bars generated by JS -->
+        </div>
+        <div class="waveform-hint">▶ Click to hear the mechanical click</div>
+      </div>
+    </div>
+    <div class="feature-copy reveal">
+      <div class="t-label">Tactile Feedback</div>
+      <h2 class="t-heading">A relay<br>click.</h2>
+      <p>Synthesized in real time using the Web Audio API — a 40ms shaped noise envelope recreating the physical mechanical snap of 1980s computer keys.</p>
+      <p>In the Mac app, every keypress plays this sound with sub-millisecond latency. You can toggle sound effects on or off with a single shortcut.</p>
+    </div>
+  </div>
+
+  <!-- Panel 3: Display font -->
+  <div class="feature-panel">
+    <div class="feature-visual">
+      <div class="display-specimen reveal">
+        <span class="number">−3.14159265</span>
+        <span class="number number-dark">8,888,888.</span>
+        <div class="label">MacCalculatorDisplay · custom bitmap font</div>
+      </div>
+    </div>
+    <div class="feature-copy reveal">
+      <div class="t-label">Typography</div>
+      <h2 class="t-heading">A font built<br>for seven<br>segments.</h2>
+      <p>MacCalculatorDisplay is a bespoke bitmap typeface that accurately replicates the original 7px LCD-style display numerals created by Apple in 1984.</p>
+      <p>Numbers render right-aligned with authentic pixel gaps, exactly as they appeared on the original Macintosh screen.</p>
+    </div>
+  </div>
+
+  <!-- Panel 4: Window states -->
+  <div class="feature-panel reverse">
+    <div class="feature-visual">
+      <div class="window-compare reveal">
+        <div class="window-state">
+          <img src="./assets/svgs/calculator_active.svg" width="106" height="169" alt="Active window" />
+          <div class="window-state-label">
+            <div class="name">Active Window</div>
+            <div class="desc">Horizontal pinstripes with filled black title bar when focused.</div>
+          </div>
+        </div>
+        <div style="width:100%; height:1px; background:var(--border-mid);"></div>
+        <div class="window-state">
+          <img src="./assets/svgs/calculator_inactive.svg" width="106" height="169" alt="Inactive window" />
+          <div class="window-state-label">
+            <div class="name">Inactive Window</div>
+            <div class="desc">Clean hollow outline title bar when you switch to another app.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feature-copy reveal">
+      <div class="t-label">macOS Fidelity</div>
+      <h2 class="t-heading">It knows<br>when you're<br>looking.</h2>
+      <p>The title bar responds instantly to window focus changes, just like original System 1 Desk Accessories. Supports Always on Top, native macOS window shadows, and pixel-doubled integer scaling.</p>
+    </div>
+  </div>
+
+</section>
+
+<div style="height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);"></div>
+
+<!-- ── Try It ───────────────────────────────────────────────────── -->
+<section id="try">
+  <div class="shell">
+    <h2 class="t-heading reveal" style="margin-bottom:12px;">Try it.</h2>
+    <p class="t-sub reveal" style="margin-bottom:48px;">Click the buttons or use your physical keyboard.</p>
+    <div class="try-env reveal">
+      <div class="try-mac-bg">
+        <div id="calc-interactive">
+          <!-- Full authentic 1984 SVG Calculator Artwork -->
+          <img class="calc-artwork" src="./assets/svgs/calculator_active.svg" width="318" height="507" alt="Classic Calculator" draggable="false" />
+          <!-- Screen Display Overlay -->
+          <div id="calc-display-text">0</div>
+          <!-- Clickable Button Hotspots (exact 1984 ButtonDefs) -->
+          <div id="calc-btns"></div>
+        </div>
+      </div>
+      <div class="kbd-hints">
+        <span class="kbd">0–9</span>
+        <span class="kbd">+ − * /</span>
+        <span class="kbd">= / Return</span>
+        <span class="kbd">C / Esc</span>
+        <span class="kbd">E</span>
+        <span class="kbd">⌫</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Download CTA ─────────────────────────────────────────────── -->
+<section id="download">
+  <div class="shell" style="text-align:center;">
+    <h2 class="t-heading reveal" style="color:var(--bg);">Free. Always.</h2>
+    <p class="t-sub reveal">
+      Download for macOS 13 and later.<br>Native SwiftUI. Fast, lightweight, private.
     </p>
-    <div class="hero-actions">
-      <a class="btn-cta" href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-        Download for macOS
-      </a>
-      <a class="btn-secondary" href="https://github.com/19JVJeffery/ClassicCalculator" target="_blank" rel="noopener">
-        View Source
-      </a>
-    </div>
-
-    <!-- Interactive Calculator -->
-    <div class="calc-showcase reveal">
-      <div class="calc-info" style="align-items:flex-end; text-align:right;">
-        <div class="calc-info-item" style="flex-direction:row-reverse;">
-          <div class="calc-info-icon">⌨️</div>
-          <div class="calc-info-text">
-            <strong>Keyboard Support</strong>
-            Type numbers, operators, and press <span class="kbd">Return</span>
-          </div>
-        </div>
-        <div class="calc-info-item" style="flex-direction:row-reverse;">
-          <div class="calc-info-icon">🖱️</div>
-          <div class="calc-info-text">
-            <strong>InvertRect Click Physics</strong>
-            Authentic 1984 button-press inversion effect
-          </div>
-        </div>
-        <div class="calc-info-item" style="flex-direction:row-reverse;">
-          <div class="calc-info-icon">🔊</div>
-          <div class="calc-info-text">
-            <strong>Relay Click Sound</strong>
-            Synthesised mechanical relay audio on each key
-          </div>
-        </div>
-      </div>
-
-      <!-- The interactive calculator -->
-      <div id="interactive-calc" class="calc-wrapper" style="position:relative; width:318px; height:507px;">
-        <!-- Calculator SVG body (active state) -->
-        <svg id="calc-body-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 106 169"
-             width="318" height="507" shape-rendering="crispEdges"
-             style="display:block; position:absolute; top:0; left:0; pointer-events:none;">
-          <path id="window-base" fill="#eeeeee" d="M4,0h96v168h-96zM3,1h1v166h-1zM100,1h4v167h-4zM2,2h1v164h-1zM104,2h1v165h-1zM105,3h1v1h-1zM1,4h1v161h-1zM0,5h1v160h-1zM105,5h1v159h-1zM105,165h1v1h-1zM5,168h96v1h-96z"/>
-          <path id="calc-details" fill="#222222" d="M5,0h95v4h-95zM3,1h2v19h-2zM100,1h3v19h-3zM2,2h1v19h-1zM103,2h1v165h-1zM104,3h1v163h-1zM1,4h1v19h-1zM5,4h4v16h-4zM20,4h80v1h-80zM0,5h1v159h-1zM10,5h9v9h-9zM20,5h10v1h-10zM34,5h11v1h-11zM47,5h17v2h-17zM66,5h11v2h-11zM79,5h21v2h-21zM105,5h1v159h-1zM20,6h9v14h-9zM31,6h3v7h-3zM35,6h10v1h-10zM34,7h4v1h-4zM42,7h3v1h-3zM47,7h3v1h-3zM53,7h3v1h-3zM58,7h2v6h-2zM62,7h2v13h-2zM66,7h3v1h-3zM73,7h3v1h-3zM80,7h3v1h-3zM87,7h3v1h-3zM92,7h1v1h-1zM95,7h5v13h-5zM34,8h3v4h-3zM38,8h3v1h-3zM43,8h2v12h-2zM47,8h2v12h-2zM51,8h2v5h-2zM54,8h2v12h-2zM66,8h2v12h-2zM69,8h3v1h-3zM74,8h3v12h-3zM79,8h3v5h-3zM84,8h2v5h-2zM88,8h2v12h-2zM93,8h2v12h-2zM37,9h1v1h-1zM53,9h1v3h-1zM68,9h1v1h-1zM92,9h1v11h-1zM39,10h2v3h-2zM70,10h2v3h-2zM35,12h2v8h-2zM29,13h1v8h-1zM34,13h1v7h-1zM37,13h1v8h-1zM49,13h1v8h-1zM53,13h1v8h-1zM56,13h1v7h-1zM68,13h1v7h-1zM77,13h1v8h-1zM80,13h3v7h-3zM87,13h1v7h-1zM30,14h4v6h-4zM38,14h5v6h-5zM45,14h2v6h-2zM50,14h3v6h-3zM57,14h5v6h-5zM64,14h2v6h-2zM69,14h5v6h-5zM78,14h2v6h-2zM83,14h4v6h-4zM90,14h2v6h-2zM9,15h11v5h-11zM5,20h1v1h-1zM9,20h1v1h-1zM13,20h1v1h-1zM17,20h1v1h-1zM21,20h1v1h-1zM25,20h1v1h-1zM33,20h1v1h-1zM41,20h1v1h-1zM45,20h1v1h-1zM57,20h1v1h-1zM61,20h1v1h-1zM65,20h1v1h-1zM69,20h1v1h-1zM73,20h1v1h-1zM81,20h1v1h-1zM85,20h1v1h-1zM89,20h1v1h-1zM93,20h1v1h-1zM97,20h1v1h-1zM101,20h2v1h-2zM3,21h1v1h-1zM7,21h1v1h-1zM11,21h1v1h-1zM15,21h1v1h-1zM19,21h1v1h-1zM23,21h1v1h-1zM27,21h1v1h-1zM31,21h1v1h-1zM35,21h1v1h-1zM39,21h1v1h-1zM43,21h1v1h-1zM47,21h1v1h-1zM51,21h1v1h-1zM55,21h1v1h-1zM59,21h1v1h-1zM63,21h1v1h-1zM67,21h1v1h-1zM71,21h1v1h-1zM75,21h1v1h-1zM79,21h1v1h-1zM83,21h1v1h-1zM87,21h1v1h-1zM91,21h1v1h-1zM95,21h1v1h-1zM99,21h1v1h-1zM102,21h1v1h-1zM5,22h1v1h-1zM9,22h1v1h-1zM13,22h1v1h-1zM17,22h1v1h-1zM21,22h1v1h-1zM25,22h1v1h-1zM29,22h1v1h-1zM33,22h1v1h-1zM37,22h1v1h-1zM41,22h1v1h-1zM45,22h1v1h-1zM49,22h1v1h-1zM53,22h1v1h-1zM57,22h1v1h-1zM61,22h1v1h-1zM65,22h1v1h-1zM69,22h1v1h-1zM73,22h1v1h-1zM77,22h1v1h-1zM81,22h1v1h-1zM85,22h1v1h-1zM89,22h1v1h-1zM93,22h1v1h-1zM97,22h1v1h-1zM101,22h1v1h-1z"/>
-          <!-- Screen area (light grey) -->
-          <rect x="9" y="28" width="88" height="19" fill="#b8c4b8"/>
-          <!-- Screen border -->
-          <rect x="8" y="27" width="90" height="21" fill="none" stroke="#555" stroke-width="1"/>
-          <!-- Button area background -->
-          <rect x="9" y="53" width="88" height="109" fill="#cccccc"/>
-        </svg>
-
-        <!-- Display text overlay (positioned over screen area y=28-46, x=9-96 in SVG coords * 3) -->
-        <div id="calc-display"
-             style="position:absolute;
-                    top: 84px;   /* 28*3 */
-                    left: 27px;  /* 9*3 */
-                    width: 264px; /* 88*3 */
-                    height: 57px; /* 19*3 */
-                    display:flex; align-items:center; justify-content:flex-end;
-                    padding-right: 8px;
-                    font-family: 'MacCalculatorDisplay', monospace;
-                    font-size: 26px;
-                    color: #1a1a1a;
-                    pointer-events: none;
-                    overflow: hidden;
-                    white-space: nowrap;">0</div>
-
-        <!-- Clickable button grid overlay -->
-        <!-- Buttons are laid out in the SVG from y≈53 to y≈162, x=9 to x=97 -->
-        <!-- At 3x: y_start=159, height per button ≈22*3=66px, x_start=27 -->
-        <!-- Row 1: C, ±(E), ÷  at y≈53-70 = 159-210 -->
-        <!-- Actually using precise button positions from the SVG analysis -->
-        <div id="btn-grid" style="position:absolute; top:0; left:0; width:318px; height:507px;">
-          <!-- Buttons will be injected by JS -->
-        </div>
-      </div>
-
-      <div class="calc-info">
-        <div class="calc-info-item">
-          <div class="calc-info-icon">✦</div>
-          <div class="calc-info-text">
-            <strong>Pixel-perfect fidelity</strong>
-            Every path, every shade — hand-crafted vector pixel art at <code style="font-size:11px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;color:var(--text-dim)">106×169</code>
-          </div>
-        </div>
-        <div class="calc-info-item">
-          <div class="calc-info-icon">🎨</div>
-          <div class="calc-info-text">
-            <strong>Two colour themes</strong>
-            Classic Platinum &amp; stark Monochrome — switchable instantly
-          </div>
-        </div>
-        <div class="calc-info-item">
-          <div class="calc-info-icon">📐</div>
-          <div class="calc-info-text">
-            <strong>Scalable 1×–4×</strong>
-            Integer-scaled for crisp Retina rendering at any size
-          </div>
-        </div>
-      </div>
+    <a class="btn-pill-light reveal" href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download for macOS
+    </a>
+    <div class="trust-row-dark reveal">
+      <span>Free</span>
+      <span>macOS 13 Ventura+</span>
+      <span>Native SwiftUI</span>
+      <span>Apple Silicon &amp; Intel</span>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
-
-<!-- ─── Features Bento ──────────────────────────────────────────── -->
-<section class="section" id="features">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">Features</div>
-      <h2 class="section-title">Built right.<br/>Down to the pixel.</h2>
-      <p class="section-sub">Every detail of the original 1984 Desk Accessory, rebuilt as a first-class native SwiftUI app for macOS.</p>
-    </div>
-
-    <div class="bento">
-
-      <!-- Card 1: Pixel Art — big card -->
-      <div class="card card-span-7 reveal">
-        <div class="card-eyebrow">Artwork</div>
-        <div class="card-title">Hand-crafted Vector Pixel Art</div>
-        <div class="card-body">
-          Every shape is an SVG <code style="font-size:11px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;color:var(--text-dim)">path</code> with <code style="font-size:11px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;color:var(--text-dim)">shape-rendering="crispEdges"</code> — mathematically precise at any scale, with no anti-aliasing blur.
-        </div>
-        <div class="card-visual" style="gap:16px; align-items:flex-start; justify-content:center; flex-wrap:wrap; margin-top:28px;">
-          <div style="text-align:center;">
-            <img src="./assets/svgs/calculator_active.svg" width="106" height="169"
-                 style="image-rendering:pixelated; display:block; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5));" alt="Active state"/>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; letter-spacing:0.04em;">ACTIVE</div>
-          </div>
-          <div style="text-align:center;">
-            <img src="./assets/svgs/calculator_inactive.svg" width="106" height="169"
-                 style="image-rendering:pixelated; display:block; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5));" alt="Inactive state"/>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; letter-spacing:0.04em;">INACTIVE</div>
-          </div>
-          <div style="text-align:center;">
-            <img src="./assets/svgs/calculator_monochrome.svg" width="106" height="169"
-                 style="image-rendering:pixelated; display:block; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5));" alt="Monochrome state"/>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:8px; letter-spacing:0.04em;">MONOCHROME</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 2: Display font -->
-      <div class="card card-span-5 reveal">
-        <div class="card-eyebrow">Typography</div>
-        <div class="card-title">Custom Bitmap Display Font</div>
-        <div class="card-body">
-          MacCalculatorDisplay — a bespoke bitmap typeface that exactly replicates the 1984 LCD-style seven-segment display numerals.
-        </div>
-        <div class="card-visual" style="flex-direction:column; gap:12px; align-items:flex-start; margin-top:20px;">
-          <div class="pixel-display">0.123456789</div>
-          <div class="pixel-display" style="font-size:28px; background:#1a1a1a; color:#b8c4b8;">−3.14159</div>
-          <div style="font-size:11px; color:var(--text-muted); letter-spacing:0.04em; margin-top:4px;">MacCalculatorDisplay · WOFF</div>
-        </div>
-      </div>
-
-      <!-- Card 3: Audio -->
-      <div class="card card-span-5 audio-card reveal">
-        <div class="card-eyebrow">Audio</div>
-        <div class="card-title">Synthesised Relay Click</div>
-        <div class="card-body">
-          A short white-noise burst shaped by a rapid gain envelope. Tactile, mechanical — just like the real thing.
-        </div>
-        <div class="waveform">
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-        </div>
-      </div>
-
-      <!-- Card 4: Window states -->
-      <div class="card card-span-7 reveal">
-        <div class="card-eyebrow">Window Behaviour</div>
-        <div class="card-title">Active & Inactive States</div>
-        <div class="card-body">
-          The title bar faithfully switches between a rich black active state and a hollow inactive state — exactly as on the original System 1 Finder.
-        </div>
-        <ul class="feature-list">
-          <li>Always on Top — float above all other windows</li>
-          <li>Native macOS window shadow toggle</li>
-          <li>Integer scale from 1× to 4×</li>
-          <li>Window centering shortcut</li>
-        </ul>
-      </div>
-
-      <!-- Card 5: Themes -->
-      <div class="card card-span-6 reveal">
-        <div class="card-eyebrow">Appearance</div>
-        <div class="card-title">Two Colour Schemes</div>
-        <div class="card-body">
-          Classic Platinum for the authentic warm-grey look, or go starkly monochrome for modern desks. Switch from the menu bar or Settings.
-        </div>
-        <div class="themes-row">
-          <div class="theme-chip">
-            <div class="theme-swatch" style="background:#eeeeee;"></div>
-            Classic Platinum
-          </div>
-          <div class="theme-chip">
-            <div class="theme-swatch" style="background:#1a1a1a; border-color:rgba(255,255,255,0.3);"></div>
-            Monochrome
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 6: Keyboard -->
-      <div class="card card-span-6 reveal">
-        <div class="card-eyebrow">Input</div>
-        <div class="card-title">Full Keyboard Support</div>
-        <div class="card-body">
-          Every operation is reachable from your keyboard. No mousing required.
-        </div>
-        <div style="margin-top:16px; display:flex; flex-wrap:wrap; gap:6px;">
-          <span class="kbd">0–9</span>
-          <span class="kbd">+</span>
-          <span class="kbd">−</span>
-          <span class="kbd">*</span>
-          <span class="kbd">/</span>
-          <span class="kbd">.</span>
-          <span class="kbd">Return</span>
-          <span class="kbd">Esc</span>
-          <span class="kbd">Delete</span>
-          <span class="kbd">⌘C</span>
-          <span class="kbd">⌘V</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ─── Story Section ───────────────────────────────────────────── -->
-<section class="section" id="story">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">The Story</div>
-      <h2 class="section-title">A single afternoon.<br/>Forty years of memory.</h2>
-      <p class="section-sub">The Calculator Desk Accessory was one of the first apps shipped with the original Macintosh. Two people made it in a day.</p>
-    </div>
-
-    <div class="history-grid reveal">
-      <div class="history-card">
-        <div class="history-year">Andy Hertzfeld · 1983</div>
-        <p class="history-quote">
-          "I wrote it in about an afternoon. It was one of the first Desk Accessories. Susan came over and said it needed to look better."
-        </p>
-        <div class="history-attr">
-          <strong>Andy Hertzfeld</strong> — Mac System Software Engineer
-        </div>
-      </div>
-      <div class="history-card">
-        <div class="history-year">Susan Kare · 1983</div>
-        <p class="history-quote">
-          "I wanted every button to look like it was actually being pressed. The inversion effect gave it that tactile quality you could almost feel."
-        </p>
-        <div class="history-attr">
-          <strong>Susan Kare</strong> — Macintosh Graphic Artist &amp; Icon Designer
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top: 48px;" class="reveal">
-      <div class="card" style="padding: 0; overflow:hidden;">
-        <div style="padding:32px 32px 0;">
-          <div class="section-label">Timeline</div>
-        </div>
-        <div style="padding: 0 32px 32px;">
-          <div class="timeline-item">
-            <div class="timeline-year-label">1984</div>
-            <div class="timeline-content">
-              <h4>Macintosh System 1.0 ships</h4>
-              <p>The Calculator Desk Accessory debuts alongside MacPaint, MacWrite, and the original Finder. Instantly iconic.</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year-label">2001</div>
-            <div class="timeline-content">
-              <h4>Mac OS X — a new era</h4>
-              <p>Apple ships a full-colour Aqua Calculator. The original black-and-white aesthetic is retired — but not forgotten.</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year-label">2026</div>
-            <div class="timeline-content">
-              <h4>Classic Calculator — reborn</h4>
-              <p>A native SwiftUI recreation. Every pixel traced. Every behaviour matched. Open-source and free.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ─── Download CTA ────────────────────────────────────────────── -->
-<section class="section" id="download">
-  <div class="container" style="text-align:center;">
-    <div class="reveal">
-      <div class="hero-badge" style="margin:0 auto 28px;">Free · Open Source · MIT License</div>
-      <h2 style="font-size:clamp(32px,5vw,56px); font-weight:700; letter-spacing:-0.04em; color:var(--accent-bright); margin-bottom:20px; line-height:1.1;">
-        Take it back to 1984.
-      </h2>
-      <p style="font-size:17px; color:var(--text-muted); max-width:480px; margin:0 auto 40px; line-height:1.65;">
-        Download the latest release for macOS. Built and signed. Completely free. Forever.
-      </p>
-      <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:40px;">
-        <a class="btn-cta" style="font-size:16px; padding:13px 28px;"
-           href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          Download on GitHub
-        </a>
-        <a class="btn-secondary" style="font-size:16px; padding:13px 28px;"
-           href="https://github.com/19JVJeffery/ClassicCalculator/issues" target="_blank" rel="noopener">
-          Report an Issue
-        </a>
-      </div>
-      <div style="display:flex; gap:32px; justify-content:center; flex-wrap:wrap;">
-        <div class="calc-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" opacity="0.6"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          MIT License
-        </div>
-        <div class="calc-badge">🍎 macOS 13+</div>
-        <div class="calc-badge">⚡ Native SwiftUI</div>
-        <div class="calc-badge">🆓 Free Forever</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Footer ──────────────────────────────────────────────────── -->
+<!-- ── Footer ───────────────────────────────────────────────────── -->
 <footer>
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="#" class="nav-brand" style="text-decoration:none;">
-          <img class="nav-icon" src="./assets/svgs/calculator_active.svg" alt="icon" />
-          <span class="nav-logo-text">Classic Calculator</span>
-        </a>
-        <p class="footer-tagline">
-          A pixel-perfect recreation of the 1984 Macintosh Calculator Desk Accessory. 
-          Native SwiftUI. Open source. Free.
-        </p>
+  <div class="shell">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">
+          <img src="./assets/svgs/calculator_active.svg" alt="Classic Calculator" />
+          Classic Calculator
+        </div>
+        <p class="footer-tagline">A pixel-perfect recreation of the 1984 Macintosh Calculator Desk Accessory. For macOS today.</p>
       </div>
-      <div class="footer-col">
-        <h5>Project</h5>
-        <ul>
-          <li><a href="https://github.com/19JVJeffery/ClassicCalculator" target="_blank" rel="noopener">GitHub Repository</a></li>
-          <li><a href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">Releases</a></li>
-          <li><a href="https://github.com/19JVJeffery/ClassicCalculator/issues" target="_blank" rel="noopener">Issue Tracker</a></li>
-          <li><a href="https://github.com/19JVJeffery/ClassicCalculator/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h5>Inspiration</h5>
-        <ul>
-          <li><a href="https://folklore.org/StoryView.py?story=Calculator_Construction_Set.txt" target="_blank" rel="noopener">Folklore: Calculator Story</a></li>
-          <li><a href="https://en.wikipedia.org/wiki/Susan_Kare" target="_blank" rel="noopener">Susan Kare</a></li>
-          <li><a href="https://en.wikipedia.org/wiki/Andy_Hertzfeld" target="_blank" rel="noopener">Andy Hertzfeld</a></li>
-        </ul>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>App</h5>
+          <ul>
+            <li><a href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">Download</a></li>
+            <li><a href="https://github.com/19JVJeffery/ClassicCalculator/releases" target="_blank" rel="noopener">Release Notes</a></li>
+            <li><a href="https://github.com/19JVJeffery/ClassicCalculator/issues" target="_blank" rel="noopener">Report an Issue</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>History</h5>
+          <ul>
+            <li><a href="https://www.folklore.org/StoryView.py?story=Calculator_Construction_Set.txt" target="_blank" rel="noopener">Calculator Construction Set</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Susan_Kare" target="_blank" rel="noopener">Susan Kare</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Andy_Hertzfeld" target="_blank" rel="noopener">Andy Hertzfeld</a></li>
+          </ul>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 <a href="https://github.com/19JVJeffery" target="_blank" rel="noopener">19JVJeffery</a> · MIT License · Not affiliated with Apple Inc.</p>
-      <p style="color:var(--text-muted); font-size:12px;">Made with ♥ for the Mac</p>
+      © 2026 Classic Calculator · Not affiliated with Apple Inc. · Made for the love of the Mac.
     </div>
   </div>
+  <div class="footer-wordmark">CALCULATOR</div>
 </footer>
 
-<!-- ─── Scripts ─────────────────────────────────────────────────── -->
-<script>
-/* ── Scroll reveal ─────────────────────────────────────────────── */
-const revealEls = document.querySelectorAll('.reveal');
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
-  });
-}, { threshold: 0.12 });
-revealEls.forEach(el => revealObs.observe(el));
+<!-- ── GSAP ─────────────────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 
-/* ── Web Audio click sound ─────────────────────────────────────── */
+<script>
+/* ── Waveform bars ──────────────────────────────────────────────── */
+(function() {
+  const wf = document.getElementById('waveform');
+  if (!wf) return;
+  const heights = [18,28,44,56,68,76,80,72,60,52,44,36,60,72,80,68,56,44,32,24,40,52,64,72,56,44,30,20];
+  heights.forEach((h, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'wave-bar';
+    bar.style.cssText = `height:${h}px; animation-delay:${i * 0.05}s; animation-duration:${1.2 + (i % 4) * 0.15}s;`;
+    wf.appendChild(bar);
+  });
+})();
+
+/* ── Web Audio click ────────────────────────────────────────────── */
 let audioCtx = null;
 function playClick() {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.04, audioCtx.sampleRate);
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    const dur = 0.04;
+    const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
     const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.max(0, 1 - i / (data.length * 0.3));
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 3) * 0.8;
+    }
     const src = audioCtx.createBufferSource();
     src.buffer = buf;
     const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.24, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     src.connect(gain);
     gain.connect(audioCtx.destination);
     src.start();
   } catch(e) {}
 }
 
-/* ── Calculator Logic ──────────────────────────────────────────── */
-let displayVal = '0';
-let accumulator = null;
+/* ── Waveform click burst ───────────────────────────────────────── */
+document.getElementById('waveform-wrap')?.addEventListener('click', function() {
+  playClick();
+  const bars = this.querySelectorAll('.wave-bar');
+  bars.forEach(b => {
+    b.style.transition = 'transform 0.08s ease';
+    b.style.transform = `scaleY(${1.2 + Math.random() * 1.8})`;
+    b.style.background = 'rgba(250,250,248,0.95)';
+    setTimeout(() => {
+      b.style.transition = '';
+      b.style.transform = '';
+      b.style.background = '';
+    }, 320);
+  });
+});
+
+/* ── Nav blur on scroll ─────────────────────────────────────────── */
+const nav = document.getElementById('nav');
+const onScroll = () => {
+  nav.classList.toggle('scrolled', window.scrollY > 30);
+};
+window.addEventListener('scroll', onScroll, { passive: true });
+
+/* ── Hero calculator: active ↔ inactive toggle ─────────────────── */
+const calcActive = document.getElementById('calc-hero');
+const calcInactive = document.getElementById('calc-hero-inactive');
+if (calcActive && calcInactive) {
+  let isActive = true;
+  setInterval(() => {
+    isActive = !isActive;
+    if (isActive) {
+      calcActive.style.opacity = '1';
+      calcInactive.style.opacity = '0';
+    } else {
+      calcActive.style.opacity = '0';
+      calcInactive.style.opacity = '1';
+    }
+  }, 2800);
+}
+
+/* ── Calculator Engine (Exact parity with CalculatorEngine.swift) ─ */
+let displayText = '0';
+let storedVal = null;
 let pendingOp = null;
-let justEvaled = false;
+let resetOnNext = false;
+let isError = false;
 
-function updateDisplay(v) {
-  displayVal = v;
-  document.getElementById('calc-display').textContent = v;
+function formatResult(val) {
+  if (isNaN(val) || !isFinite(val)) return 'E';
+  if (Math.abs(val) >= 1e10 || (Math.abs(val) > 0 && Math.abs(val) < 1e-6)) {
+    return 'E';
+  }
+  let s = val.toString();
+  if (s.includes('.')) {
+    s = s.replace(/\.?0+$/, '');
+  }
+  if (s.length > 10) {
+    s = parseFloat(val.toPrecision(8)).toString();
+  }
+  return s.length > 10 ? 'E' : s;
 }
 
-function clearCalc() {
-  accumulator = null; pendingOp = null; justEvaled = false;
-  updateDisplay('0');
+function updateDisp(v) {
+  displayText = v;
+  const el = document.getElementById('calc-display-text');
+  if (el) el.textContent = v;
 }
 
-function pressDigit(d) {
+function compute(stored, op, current) {
+  switch (op) {
+    case '+': return stored + current;
+    case '-': return stored - current;
+    case '*': return stored * current;
+    case '/': return current !== 0 ? stored / current : NaN;
+    default: return current;
+  }
+}
+
+function inputDigit(d) {
   playClick();
-  if (justEvaled) { justEvaled = false; updateDisplay(d === '.' ? '0.' : d); return; }
-  if (displayVal === '0' && d !== '.') { updateDisplay(d); return; }
-  if (d === '.' && displayVal.includes('.')) return;
-  if (displayVal.replace(/[^0-9]/g,'').length >= 9) return;
-  updateDisplay(displayVal + d);
+  if (isError) return;
+  if (displayText === '0' || resetOnNext) {
+    updateDisp(d);
+    resetOnNext = false;
+  } else if (displayText.length < 10) {
+    updateDisp(displayText + d);
+  }
 }
 
-function pressOp(op) {
+function inputDecimal() {
   playClick();
-  const cur = parseFloat(displayVal);
-  if (accumulator !== null && pendingOp && !justEvaled) {
-    const res = applyOp(accumulator, pendingOp, cur);
-    accumulator = res;
-    updateDisplay(formatResult(res));
+  if (isError) return;
+  if (resetOnNext) {
+    updateDisp('0.');
+    resetOnNext = false;
+  } else if (!displayText.includes('.') && displayText.length < 10) {
+    updateDisp(displayText + '.');
+  }
+}
+
+function applyOperator(op) {
+  playClick();
+  if (isError) return;
+  if (pendingOp && storedVal !== null && !resetOnNext) {
+    const current = parseFloat(displayText) || 0;
+    const result = compute(storedVal, pendingOp, current);
+    if (isNaN(result) || !isFinite(result)) {
+      updateDisp('E');
+      isError = true;
+      pendingOp = null;
+      storedVal = null;
+      resetOnNext = true;
+      return;
+    }
+    const formatted = formatResult(result);
+    if (formatted === 'E') isError = true;
+    updateDisp(formatted);
+    storedVal = result;
   } else {
-    accumulator = cur;
+    storedVal = parseFloat(displayText) || 0;
   }
   pendingOp = op;
-  justEvaled = true;
+  resetOnNext = true;
 }
 
-function pressEqual() {
+function executeEquals() {
   playClick();
-  if (pendingOp === null) return;
-  const cur = parseFloat(displayVal);
-  const res = applyOp(accumulator, pendingOp, cur);
-  accumulator = null; pendingOp = null; justEvaled = true;
-  updateDisplay(formatResult(res));
+  if (isError) return;
+  if (!pendingOp || storedVal === null) {
+    resetOnNext = true;
+    return;
+  }
+  const current = parseFloat(displayText) || 0;
+  const result = compute(storedVal, pendingOp, current);
+  if (isNaN(result) || !isFinite(result)) {
+    updateDisp('E');
+    isError = true;
+  } else {
+    const formatted = formatResult(result);
+    if (formatted === 'E') isError = true;
+    updateDisp(formatted);
+  }
+  pendingOp = null;
+  storedVal = null;
+  resetOnNext = true;
 }
 
-function applyOp(a, op, b) {
-  switch(op) {
-    case '+': return a + b;
-    case '-': return a - b;
-    case '*': return a * b;
-    case '/': return b !== 0 ? a / b : 0;
+function clearAll() {
+  playClick();
+  updateDisp('0');
+  storedVal = null;
+  pendingOp = null;
+  resetOnNext = false;
+  isError = false;
+}
+
+function clearEntryOrError() {
+  playClick();
+  isError = false;
+  updateDisp('0');
+  resetOnNext = false;
+}
+
+function backspace() {
+  playClick();
+  if (isError || resetOnNext) return;
+  if (displayText.length > 1) {
+    updateDisp(displayText.slice(0, -1));
+  } else {
+    updateDisp('0');
   }
 }
 
-function formatResult(n) {
-  if (!isFinite(n)) return 'E';
-  const s = parseFloat(n.toPrecision(9)).toString();
-  if (s.length <= 9) return s;
-  return parseFloat(n.toFixed(6)).toString();
-}
-
-function pressSign() {
-  playClick();
-  const v = parseFloat(displayVal);
-  if (v !== 0) updateDisplay((-v).toString());
-}
-
-/* ── Build button overlay ──────────────────────────────────────── */
-// The calculator SVG is 106×169, displayed at 3× (318×507)
-// Button positions derived from SVG analysis (y=53 is first button row top)
-// Scale factor = 3
+/* ── Calculator button overlay (Exact 1984 ButtonDefs) ─────────── */
 const S = 3;
+const btnDefs = [
+  // Row 0 (y = 52, h = 18)
+  { id: 'C', x: 9, y: 52, w: 20, h: 18, fn: clearAll },
+  { id: 'E', x: 31, y: 52, w: 20, h: 18, fn: clearEntryOrError },
+  { id: 'equal', x: 53, y: 52, w: 20, h: 18, fn: executeEquals },
+  { id: 'multiply', x: 75, y: 52, w: 20, h: 18, fn: () => applyOperator('*') },
 
-// Button rows in SVG coordinates (approximate, from the pixel art structure)
-// Row separator lines at y ≈ 46, 70, 92, 114, 136, 158 (dashed lines between rows)
-// Each button column: x ≈ 9-26, 28-46, 48-70, 72-92
-// Actually from the SVG the 4-column grid starts at x=9, buttons 22px wide with gaps
+  // Row 1 (y = 74, h = 18)
+  { id: '7', x: 9, y: 74, w: 20, h: 18, fn: () => inputDigit('7') },
+  { id: '8', x: 31, y: 74, w: 20, h: 18, fn: () => inputDigit('8') },
+  { id: '9', x: 53, y: 74, w: 20, h: 18, fn: () => inputDigit('9') },
+  { id: 'divide', x: 75, y: 74, w: 20, h: 18, fn: () => applyOperator('/') },
 
-const buttons = [
-  // [label, svgX, svgY, svgW, svgH, action]
-  // Row 1 (y 52-68): C, ±, ÷ (3-wide area for C then 2 cols for operators)
-  { label:'C',  x:9,  y:53, w:28, h:15, action:()=>{ playClick(); clearCalc(); } },
-  { label:'±',  x:38, y:53, w:22, h:15, action:()=>pressSign() },
-  { label:'÷',  x:70, y:53, w:22, h:15, action:()=>pressOp('/') },
+  // Row 2 (y = 96, h = 18)
+  { id: '4', x: 9, y: 96, w: 20, h: 18, fn: () => inputDigit('4') },
+  { id: '5', x: 31, y: 96, w: 20, h: 18, fn: () => inputDigit('5') },
+  { id: '6', x: 53, y: 96, w: 20, h: 18, fn: () => inputDigit('6') },
+  { id: 'minus', x: 75, y: 96, w: 20, h: 18, fn: () => applyOperator('-') },
 
-  // Row 2 (y 70-92): 7, 8, 9, ×
-  { label:'7',  x:9,  y:69, w:18, h:19, action:()=>pressDigit('7') },
-  { label:'8',  x:28, y:69, w:18, h:19, action:()=>pressDigit('8') },
-  { label:'9',  x:48, y:69, w:18, h:19, action:()=>pressDigit('9') },
-  { label:'×',  x:70, y:69, w:22, h:19, action:()=>pressOp('*') },
+  // Row 3 (y = 118, h = 18, plus is h = 40)
+  { id: '1', x: 9, y: 118, w: 20, h: 18, fn: () => inputDigit('1') },
+  { id: '2', x: 31, y: 118, w: 20, h: 18, fn: () => inputDigit('2') },
+  { id: '3', x: 53, y: 118, w: 20, h: 18, fn: () => inputDigit('3') },
+  { id: 'plus', x: 75, y: 118, w: 20, h: 40, fn: () => applyOperator('+') },
 
-  // Row 3 (y 92-114): 4, 5, 6, −
-  { label:'4',  x:9,  y:91, w:18, h:19, action:()=>pressDigit('4') },
-  { label:'5',  x:28, y:91, w:18, h:19, action:()=>pressDigit('5') },
-  { label:'6',  x:48, y:91, w:18, h:19, action:()=>pressDigit('6') },
-  { label:'−',  x:70, y:91, w:22, h:19, action:()=>pressOp('-') },
-
-  // Row 4 (y 114-136): 1, 2, 3, +
-  { label:'1',  x:9,  y:113, w:18, h:19, action:()=>pressDigit('1') },
-  { label:'2',  x:28, y:113, w:18, h:19, action:()=>pressDigit('2') },
-  { label:'3',  x:48, y:113, w:18, h:19, action:()=>pressDigit('3') },
-  { label:'+',  x:70, y:113, w:22, h:19, action:()=>pressOp('+') },
-
-  // Row 5 (y 136-158): 0 (wide), ., =
-  { label:'0',  x:9,  y:135, w:38, h:19, action:()=>pressDigit('0') },
-  { label:'.',  x:48, y:135, w:18, h:19, action:()=>pressDigit('.') },
-  { label:'=',  x:70, y:135, w:22, h:19, action:()=>pressEqual() },
+  // Row 4 (y = 140, h = 18, 0 is w = 42)
+  { id: '0', x: 9, y: 140, w: 42, h: 18, fn: () => inputDigit('0') },
+  { id: 'dot', x: 53, y: 140, w: 20, h: 18, fn: inputDecimal },
 ];
 
-const grid = document.getElementById('btn-grid');
-buttons.forEach(b => {
-  const el = document.createElement('button');
-  el.className = 'calc-btn-overlay';
-  el.style.cssText = `
-    position:absolute;
-    left:${b.x * S}px;
-    top:${b.y * S}px;
-    width:${b.w * S}px;
-    height:${b.h * S}px;
-    background:transparent;
-    border:none;
-    cursor:pointer;
-    -webkit-tap-highlight-color:transparent;
-  `;
-  el.setAttribute('aria-label', b.label);
-  el.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    b.action();
-    el.style.opacity = '0.5';
-    setTimeout(() => el.style.opacity = '1', 100);
-  });
-  grid.appendChild(el);
-});
+const btnElements = {};
+const btnContainer = document.getElementById('calc-btns');
 
-/* ── Keyboard support ──────────────────────────────────────────── */
-document.addEventListener('keydown', (e) => {
-  if (/^[0-9]$/.test(e.key)) { pressDigit(e.key); }
-  else if (e.key === '.') { pressDigit('.'); }
-  else if (e.key === '+') { pressOp('+'); }
-  else if (e.key === '-') { pressOp('-'); }
-  else if (e.key === '*') { pressOp('*'); }
-  else if (e.key === '/') { e.preventDefault(); pressOp('/'); }
-  else if (e.key === 'Enter' || e.key === '=') { pressEqual(); }
-  else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') { playClick(); clearCalc(); }
-  else if (e.key === 'Backspace') { 
-    playClick();
-    if (displayVal.length > 1 && !(displayVal.length === 2 && displayVal[0] === '-')) {
-      updateDisplay(displayVal.slice(0, -1));
-    } else { updateDisplay('0'); }
+function triggerButtonPressVisual(id) {
+  const btn = btnElements[id];
+  if (!btn) return;
+  btn.style.backgroundImage = `url('./assets/svgs/buttons-clicked/btn_${id}_pressed.svg')`;
+  setTimeout(() => {
+    btn.style.backgroundImage = '';
+  }, 100);
+}
+
+if (btnContainer) {
+  btnDefs.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'calc-btn';
+    btn.id = 'btn-item-' + b.id;
+    btn.setAttribute('aria-label', b.id);
+    btn.style.cssText = `left:${b.x * S}px; top:${b.y * S}px; width:${b.w * S}px; height:${b.h * S}px;`;
+    btnElements[b.id] = btn;
+
+    const handlePress = (e) => {
+      e.preventDefault();
+      btn.style.backgroundImage = `url('./assets/svgs/buttons-clicked/btn_${b.id}_pressed.svg')`;
+      b.fn();
+    };
+    const handleRelease = () => {
+      btn.style.backgroundImage = '';
+    };
+
+    btn.addEventListener('mousedown', handlePress);
+    btn.addEventListener('mouseup', handleRelease);
+    btn.addEventListener('mouseleave', handleRelease);
+    btn.addEventListener('touchstart', handlePress, { passive: false });
+    btn.addEventListener('touchend', handleRelease);
+    btn.addEventListener('touchcancel', handleRelease);
+
+    btnContainer.appendChild(btn);
+  });
+}
+
+/* ── Keyboard Handling ──────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+    return;
+  }
+  const key = e.key;
+  if (/^[0-9]$/.test(key)) {
+    triggerButtonPressVisual(key);
+    inputDigit(key);
+  } else if (key === '.') {
+    triggerButtonPressVisual('dot');
+    inputDecimal();
+  } else if (key === '+') {
+    triggerButtonPressVisual('plus');
+    applyOperator('+');
+  } else if (key === '-') {
+    triggerButtonPressVisual('minus');
+    applyOperator('-');
+  } else if (key === '*' || key.toLowerCase() === 'x') {
+    triggerButtonPressVisual('multiply');
+    applyOperator('*');
+  } else if (key === '/') {
+    e.preventDefault();
+    triggerButtonPressVisual('divide');
+    applyOperator('/');
+  } else if (key === 'Enter' || key === '=') {
+    e.preventDefault();
+    triggerButtonPressVisual('equal');
+    executeEquals();
+  } else if (key === 'Escape' || key.toLowerCase() === 'c') {
+    triggerButtonPressVisual('C');
+    clearAll();
+  } else if (key.toLowerCase() === 'e') {
+    triggerButtonPressVisual('E');
+    clearEntryOrError();
+  } else if (key === 'Backspace') {
+    backspace();
   }
 });
+
+/* ── GSAP Animations ────────────────────────────────────────────── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* Hero calculator float */
+if (document.getElementById('calc-hero-wrap')) {
+  gsap.to('#calc-hero-wrap', {
+    y: -7,
+    duration: 2.2,
+    yoyo: true,
+    repeat: -1,
+    ease: 'power1.inOut'
+  });
+}
+
+/* Hero entrance */
+gsap.from('.hero-copy h1', { y: 28, opacity: 0, duration: 0.85, ease: 'power3.out', delay: 0.1 });
+gsap.from('.hero-copy p', { y: 20, opacity: 0, duration: 0.8, ease: 'power2.out', delay: 0.25 });
+gsap.from('.hero-actions', { y: 16, opacity: 0, duration: 0.7, ease: 'power2.out', delay: 0.38 });
+gsap.from('.trust-row', { opacity: 0, duration: 0.6, delay: 0.5 });
+gsap.from('.mac-env', { scale: 0.94, opacity: 0, duration: 0.95, ease: 'power3.out', delay: 0.2 });
+
+/* Story horizontal scroll via matchMedia */
+ScrollTrigger.matchMedia({
+  // Desktop: pinned horizontal track
+  "(min-width: 901px)": function() {
+    const track = document.getElementById('story-track');
+    if (!track) return;
+    const totalMove = track.scrollWidth - window.innerWidth;
+
+    gsap.to(track, {
+      x: () => -totalMove,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#story .story-pin-wrap',
+        pin: '#story .story-sticky',
+        scrub: 0.8,
+        start: 'top top',
+        end: () => '+=' + (totalMove + 200),
+        invalidateOnRefresh: true,
+      }
+    });
+  },
+  // Mobile / Tablet: clean readable scroll without trap
+  "(max-width: 900px)": function() {
+    const track = document.getElementById('story-track');
+    if (track) {
+      track.style.display = 'flex';
+      track.style.flexDirection = 'column';
+      track.style.width = '100%';
+      const panels = track.querySelectorAll('.story-panel');
+      panels.forEach(p => {
+        p.style.width = '100%';
+        p.style.minHeight = 'auto';
+        p.style.padding = '48px 24px';
+      });
+    }
+  }
+});
+
+/* Feature panel reveals */
+document.querySelectorAll('.reveal').forEach(el => {
+  gsap.from(el, {
+    opacity: 0,
+    y: 28,
+    duration: 0.75,
+    ease: 'power2.out',
+    scrollTrigger: {
+      trigger: el,
+      start: 'top 85%',
+    }
+  });
+});
+
+/* Clock in Mac menubar */
+(function() {
+  const clock = document.querySelector('.clock');
+  if (!clock) return;
+  const update = () => {
+    const now = new Date();
+    let h = now.getHours(), m = now.getMinutes();
+    const am = h < 12 ? 'AM' : 'PM';
+    h = h % 12 || 12;
+    clock.textContent = `${h}:${m.toString().padStart(2, '0')} ${am}`;
+  };
+  update();
+  setInterval(update, 30000);
+})();
 </script>
 
 </body>
