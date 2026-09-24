@@ -1,0 +1,37 @@
+{
+  "name": "classiccalc-site",
+  "version": "1.0.0",
+  "description": "A modern, dark-themed landing page for [Classic Calculator](https://github.com/19JVJeffery/ClassicCalculator) — a pixel-perfect native macOS recreation of the 1984 Macintosh Calculator Desk Accessory.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && cp dist/index.source.html ./index.html && cp -r dist/assets/* ./assets/",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/19JVJeffery/ClassicCalculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/19JVJeffery/ClassicCalculator/issues"
+  },
+  "homepage": "https://github.com/19JVJeffery/ClassicCalculator#readme",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  },
+  "dependencies": {
+    "lucide-react": "^1.48.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}
