@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 40" width="60" height="120" shape-rendering="crispEdges">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 40" width="20" height="40" shape-rendering="crispEdges">
   <path fill="#222222" d="M18,0h1v1h-1zM1,1h16v27h-16zM18,2h2v38h-2zM1,28h7v2h-7zM9,28h8v2h-8zM1,30h5v7h-5zM11,30h6v7h-6zM6,31h2v6h-2zM9,31h2v6h-2zM8,33h1v4h-1zM2,38h16v2h-16zM0,39h1v1h-1z"/>
   <path fill="#eeeeee" d="M0,0h18v1h-18zM0,1h1v37h-1zM17,1h1v37h-1zM8,28h1v5h-1zM6,30h2v1h-2zM9,30h2v1h-2zM1,37h16v1h-16z"/>
 </svg>
