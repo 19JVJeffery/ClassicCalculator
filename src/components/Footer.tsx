@@ -2,7 +2,7 @@ import React from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#08090d] border-t border-white/[0.06] pt-16 pb-12 relative overflow-hidden">
+    <footer className="bg-[#08090d] border-t border-white/[0.06] pt-16 pb-0 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-16 border-b border-white/[0.06]">
           {/* Brand Col */}
@@ -120,12 +120,13 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Oversized ambient background wordmark (Alcove style) */}
-      <div className="w-full overflow-hidden flex justify-center pointer-events-none select-none mt-12">
-        <span className="text-[12vw] font-black leading-none tracking-tight text-white/[0.02] whitespace-nowrap">
+      {/* Adaptive Oversized Ambient Wordmark (Alcove style with gradient fade) */}
+      <div className="w-full overflow-hidden flex justify-center pointer-events-none select-none -mb-8 sm:-mb-14 md:-mb-20 lg:-mb-24 mt-8 sm:mt-14">
+        <span className="text-[15.5vw] font-black leading-none tracking-tighter uppercase whitespace-nowrap bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-transparent bg-clip-text text-transparent select-none text-center">
           CALCULATOR
         </span>
       </div>
     </footer>
   );
 };
+EOF
