@@ -7,7 +7,7 @@ export const DownloadCTA: React.FC = () => {
       <div className="max-w-4xl mx-auto px-6 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-xs font-semibold mb-6">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>100% Free · No Ads · No Telemetry</span>
+          <span>100% Free · No Bloat · Native macOS</span>
         </div>
 
         <h2 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-6">
@@ -44,7 +44,7 @@ export const DownloadCTA: React.FC = () => {
         </div>
 
         <div className="text-xs text-stone-500 font-medium">
-          Requires macOS 13.0 or later · Optimized for Apple Silicon &amp; Intel Macs
+          Requires macOS 13.0 or later · Universal Binary (Apple Silicon + Intel)
         </div>
       </div>
     </section>

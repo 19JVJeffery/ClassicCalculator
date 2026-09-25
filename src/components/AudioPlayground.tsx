@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Keyboard } from 'lucide-react';
+import React, { useState } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { playRelayClick } from '../utils/audio';
 
 export const AudioPlayground: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [pulseCount, setPulseCount] = useState(0);
-  const [lastKeyPressed, setLastKeyPressed] = useState<string | null>(null);
 
   // Equalizer heights
   const baseHeights = [
@@ -13,29 +12,11 @@ export const AudioPlayground: React.FC = () => {
     58, 76, 88, 72, 54, 38, 28, 48, 64, 32
   ];
 
-  const triggerSound = (keyName?: string) => {
+  const triggerSound = () => {
     if (isMuted) return;
     playRelayClick();
     setPulseCount((prev) => prev + 1);
-    if (keyName) {
-      setLastKeyPressed(keyName);
-      setTimeout(() => setLastKeyPressed(null), 400);
-    }
   };
-
-  // Global keyboard listener to play sound on keypress (inspired by Klack!)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is in an input field
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
-        return;
-      }
-      triggerSound(e.key.length === 1 ? e.key.toUpperCase() : e.key);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMuted]);
 
   return (
     <section className="py-24 md:py-32 bg-[#090a0f] border-y border-white/[0.06] relative overflow-hidden" id="sound">
@@ -72,7 +53,7 @@ export const AudioPlayground: React.FC = () => {
 
           {/* Equalizer Waveform Visualizer */}
           <div
-            onClick={() => triggerSound('Click')}
+            onClick={triggerSound}
             className="flex items-center justify-center gap-1.5 sm:gap-2 h-28 my-6 cursor-pointer select-none group"
             title="Click waveform to test sound"
           >
@@ -94,7 +75,7 @@ export const AudioPlayground: React.FC = () => {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               type="button"
-              onClick={() => triggerSound('Click')}
+              onClick={triggerSound}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-semibold bg-white text-stone-950 hover:bg-stone-100 hover:shadow-lg hover:shadow-white/10 active:scale-95 transition-all duration-200"
             >
               <Volume2 className="w-4 h-4 text-amber-500" />
@@ -102,15 +83,10 @@ export const AudioPlayground: React.FC = () => {
             </button>
           </div>
 
-          {/* Keyboard Trigger Hint */}
+          {/* Click Trigger Hint */}
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-400 font-medium">
-            <Keyboard className="w-4 h-4 text-amber-400" />
-            <span>Press any key on your keyboard right now to test</span>
-            {lastKeyPressed && (
-              <span className="ml-1.5 px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-mono text-[11px] animate-pulse">
-                [{lastKeyPressed}]
-              </span>
-            )}
+            <Volume2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Click the button or tap the equalizer waveform to audition</span>
           </div>
         </div>
       </div>

@@ -44,7 +44,7 @@ export const Hero: React.FC = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-300 text-xs font-medium mb-8">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Built natively for macOS 13+ &amp; Apple Silicon</span>
+            <span>Built natively for macOS 13+ · Universal Binary</span>
           </div>
 
           {/* Heading */}
@@ -71,15 +71,6 @@ export const Hero: React.FC = () => {
               <Download className="w-4 h-4 transition-transform group-hover:translate-y-0.5 duration-200" />
               <span>Download for macOS</span>
             </a>
-
-            <a
-              href="#sound"
-              onClick={() => playRelayClick()}
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-base font-medium border border-white/10 bg-white/5 text-stone-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-            >
-              <Volume2 className="w-4 h-4 text-amber-400" />
-              <span>Audition Sound</span>
-            </a>
           </div>
 
           {/* Trust badges */}
@@ -94,9 +85,9 @@ export const Hero: React.FC = () => {
               <span>Native SwiftUI</span>
             </div>
             <span>•</span>
-            <span>Universal Binary (M1–M4 &amp; Intel)</span>
+            <span>Universal Binary (Apple Silicon + Intel)</span>
             <span>•</span>
-            <span>Zero Telemetry</span>
+            <span>No Bloat</span>
           </div>
         </div>
 

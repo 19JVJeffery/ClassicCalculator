@@ -116,7 +116,7 @@ export const Footer: React.FC = () => {
         {/* Bottom copyright line */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-400 gap-4">
           <p>© 2026 Classic Calculator. Not affiliated with Apple Inc. Macintosh is a trademark of Apple Inc.</p>
-          <p>Native macOS Utility · Zero Tracking</p>
+          <p>Native macOS Utility · Zero Bloat</p>
         </div>
       </div>
 

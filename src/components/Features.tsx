@@ -80,9 +80,9 @@ export const Features: React.FC = () => {
             <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300 mb-6">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Zero Bloat &amp; Zero Tracking</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Zero Bloat &amp; Lightweight</h3>
             <p className="text-sm text-stone-400 leading-relaxed font-normal">
-              Under 15MB total bundle size. Instant launch, zero battery drain, zero background daemons, and 100% offline private computing.
+              Under 15MB total bundle size. Instant launch, zero battery drain, zero background daemons, and fast native performance.
             </p>
           </div>
         </div>
