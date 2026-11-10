@@ -52,7 +52,7 @@ This project faithfully resurrects that experience as a lightweight, blazing-fas
 
 Classic Calculator was hand-crafted from the ground up using modern native Apple technologies:
 
-- **100% Hand-Crafted — No AI**: **No AI tools or code generators were used** in the design, pixel-art drafting, audio synthesis, or Swift implementation. Every single coordinate, pixel boundary, vector path, sound envelope, and keystroke handler was manually measured, plotted, and refined by hand against original 1984 System 1.0 ROM dumps and folklore archives.
+- **100% Hand-Crafted: No AI**: **No AI tools or code generators were used** in the design, pixel-art drafting, audio synthesis, or Swift implementation. Every single coordinate, pixel boundary, vector path, sound envelope, and keystroke handler was manually measured, plotted, and refined by hand against original 1984 System 1.0 ROM dumps and folklore archives.
 - **Pure Swift & SwiftUI + AppKit**: Built directly against Apple's first-party frameworks for zero battery drain, zero background overhead, and native 60/120 FPS ProMotion responsiveness.
 - **Zero Dependencies & Zero Bloat**: Contains zero external third-party frameworks, zero analytics, zero daemons, and zero background tracking. The entire universal binary bundle weighs under 15MB.
 
@@ -77,7 +77,7 @@ Pre-compiled, notarized universal binaries are available on the [Releases](https
 
 In autumn 1983, Chris Espinosa wrote the original calculator for the upcoming Macintosh. Steve Jobs repeatedly rejected prototypes, complaining about line thicknesses, button dimensions, and gap sizes. 
 
-Rather than guessing what Jobs wanted, Espinosa spent an afternoon coding the **"Calculator Construction Set"** — a visual control panel that let Jobs adjust line widths, margins, and button sizes directly with sliders. Jobs tuned it for an hour, settled on his ideal parameters, and those exact proportions shipped with System 1.0 on 24 January 1984.
+Rather than guessing what Jobs wanted, Espinosa spent an afternoon coding the **"Calculator Construction Set"**, a visual control panel that let Jobs adjust line widths, margins, and button sizes directly with sliders. Jobs tuned it for an hour, settled on his ideal parameters, and those exact proportions shipped with System 1.0 on 24 January 1984.
 
 Classic Calculator honors that craftsmanship by adhering to those exact dimensions, proportions, and spirit.
 
